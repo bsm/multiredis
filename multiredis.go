@@ -20,16 +20,16 @@ type Pipeline interface {
 
 // New returns a new client, depending on the following conditions:
 //
-// If the number of Addrs is one, a single-node client will be returned.
 // If a MasterName is passed a sentinel-backed client will be created.
-// Otherwise, a cluster client will be launched.
+// If the number of Addrs is tow or more, a cluster client will be launched.
+// Otherwise, a single-node client will be returned.
 func New(opts *Options) Client {
-	if len(opts.Addrs) == 1 {
-		return simpleClient{Client: redis.NewClient(opts.simple())}
-	} else if opts.MasterName != "" {
+	if opts.MasterName != "" {
 		return simpleClient{Client: redis.NewFailoverClient(opts.failover())}
+	} else if len(opts.Addrs) > 1 {
+		return clusterClient{ClusterClient: redis.NewClusterClient(opts.cluster())}
 	}
-	return clusterClient{ClusterClient: redis.NewClusterClient(opts.cluster())}
+	return simpleClient{Client: redis.NewClient(opts.simple())}
 }
 
 // --------------------------------------------------------------------
