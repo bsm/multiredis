@@ -28,6 +28,10 @@ type Options struct {
 }
 
 func (o *Options) cluster() *redis.ClusterOptions {
+	if len(o.Addrs) == 0 {
+		o.Addrs = []string{"127.0.0.1:6379"}
+	}
+
 	return &redis.ClusterOptions{
 		Addrs:    o.Addrs,
 		PoolSize: o.PoolSize,
@@ -42,6 +46,10 @@ func (o *Options) cluster() *redis.ClusterOptions {
 }
 
 func (o *Options) failover() *redis.FailoverOptions {
+	if len(o.Addrs) == 0 {
+		o.Addrs = []string{"127.0.0.1:26379"}
+	}
+
 	return &redis.FailoverOptions{
 		SentinelAddrs: o.Addrs,
 		MasterName:    o.MasterName,
