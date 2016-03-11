@@ -5,14 +5,14 @@ import "gopkg.in/redis.v3"
 // Client is an abstract client interface which can be either a
 // cluster or a sentinel-backed or a single-node client
 type Client interface {
-	commands
+	Commands
 	Close() error
 	Pipeline() Pipeline
 }
 
 // Pipeline is a client-neutral pipeline
 type Pipeline interface {
-	commands
+	Commands
 	Close() error
 	Discard() error
 	Exec() ([]redis.Cmder, error)

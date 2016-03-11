@@ -6,7 +6,8 @@ import (
 	"gopkg.in/redis.v3"
 )
 
-type commands interface {
+// Commands exposes all supported commands
+type Commands interface {
 	Append(key, value string) *redis.IntCmd
 	BitCount(key string, bitCount *redis.BitCount) *redis.IntCmd
 	BitOpAnd(destKey string, keys ...string) *redis.IntCmd
