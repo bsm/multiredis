@@ -32,6 +32,15 @@ func New(opts *Options) Client {
 	return simpleClient{Client: redis.NewClient(opts.simple())}
 }
 
+// Cluster always creates a cluster instance, ignoring hints
+// from the passed opts.
+//
+// This is useful when you want to explicitely connect to a redis
+// cluster but only have a single seed address to connect to.
+func Cluster(opts *Options) Client {
+	return clusterClient{ClusterClient: redis.NewClusterClient(opts.cluster())}
+}
+
 // --------------------------------------------------------------------
 
 type simpleClient struct{ *redis.Client }
