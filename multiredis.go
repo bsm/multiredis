@@ -8,6 +8,7 @@ type Client interface {
 	Commands
 	Close() error
 	Pipeline() Pipeline
+	PoolStats() *redis.PoolStats
 }
 
 // Pipeline is a client-neutral pipeline
