@@ -1,6 +1,6 @@
 package multiredis
 
-import "gopkg.in/redis.v3"
+import "gopkg.in/redis.v4"
 
 // Client is an abstract client interface which can be either a
 // cluster or a sentinel-backed or a single-node client

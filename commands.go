@@ -3,7 +3,7 @@ package multiredis
 import (
 	"time"
 
-	"gopkg.in/redis.v3"
+	"gopkg.in/redis.v4"
 )
 
 // Commands exposes all supported commands
@@ -36,7 +36,7 @@ type Commands interface {
 	ClusterResetSoft() *redis.StatusCmd
 	ClusterSaveConfig() *redis.StatusCmd
 	ClusterSlaves(nodeID string) *redis.StringSliceCmd
-	ClusterSlots() *redis.ClusterSlotCmd
+	ClusterSlots() *redis.ClusterSlotsCmd
 	ConfigGet(parameter string) *redis.SliceCmd
 	ConfigResetStat() *redis.StatusCmd
 	ConfigSet(parameter, value string) *redis.StatusCmd
@@ -47,8 +47,8 @@ type Commands interface {
 	Del(keys ...string) *redis.IntCmd
 	Dump(key string) *redis.StringCmd
 	Echo(message string) *redis.StringCmd
-	Eval(script string, keys []string, args []string) *redis.Cmd
-	EvalSha(sha1 string, keys []string, args []string) *redis.Cmd
+	Eval(script string, keys []string, args ...interface{}) *redis.Cmd
+	EvalSha(sha1 string, keys []string, args ...interface{}) *redis.Cmd
 	Exists(key string) *redis.BoolCmd
 	Expire(key string, expiration time.Duration) *redis.BoolCmd
 	ExpireAt(key string, tm time.Time) *redis.BoolCmd
@@ -74,7 +74,7 @@ type Commands interface {
 	HLen(key string) *redis.IntCmd
 	HMGet(key string, fields ...string) *redis.SliceCmd
 	HMSet(key, field, value string, pairs ...string) *redis.StatusCmd
-	HScan(key string, cursor int64, match string, count int64) *redis.ScanCmd
+	HScan(key string, cursor int64, match string, count int64) *redis.Scanner
 	HSet(key, field, value string) *redis.BoolCmd
 	HSetNX(key, field, value string) *redis.BoolCmd
 	HVals(key string) *redis.StringSliceCmd
@@ -136,11 +136,11 @@ type Commands interface {
 	SRandMember(key string) *redis.StringCmd
 	SRandMemberN(key string, count int64) *redis.StringSliceCmd
 	SRem(key string, members ...string) *redis.IntCmd
-	SScan(key string, cursor int64, match string, count int64) *redis.ScanCmd
+	SScan(key string, cursor int64, match string, count int64) *redis.Scanner
 	SUnion(keys ...string) *redis.StringSliceCmd
 	SUnionStore(destination string, keys ...string) *redis.IntCmd
 	Save() *redis.StatusCmd
-	Scan(cursor int64, match string, count int64) *redis.ScanCmd
+	Scan(cursor int64, match string, count int64) *redis.Scanner
 	ScriptExists(scripts ...string) *redis.BoolSliceCmd
 	ScriptFlush() *redis.StatusCmd
 	ScriptKill() *redis.StatusCmd
@@ -175,21 +175,21 @@ type Commands interface {
 	ZIncrXX(key string, member redis.Z) *redis.FloatCmd
 	ZInterStore(destination string, store redis.ZStore, keys ...string) *redis.IntCmd
 	ZRange(key string, start, stop int64) *redis.StringSliceCmd
-	ZRangeByLex(key string, opt redis.ZRangeByScore) *redis.StringSliceCmd
-	ZRangeByScore(key string, opt redis.ZRangeByScore) *redis.StringSliceCmd
-	ZRangeByScoreWithScores(key string, opt redis.ZRangeByScore) *redis.ZSliceCmd
+	ZRangeByScore(key string, opt redis.ZRangeBy) *redis.StringSliceCmd
+	ZRangeByLex(key string, opt redis.ZRangeBy) *redis.StringSliceCmd
+	ZRangeByScoreWithScores(key string, opt redis.ZRangeBy) *redis.ZSliceCmd
 	ZRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd
 	ZRank(key, member string) *redis.IntCmd
 	ZRem(key string, members ...string) *redis.IntCmd
 	ZRemRangeByRank(key string, start, stop int64) *redis.IntCmd
 	ZRemRangeByScore(key, min, max string) *redis.IntCmd
 	ZRevRange(key string, start, stop int64) *redis.StringSliceCmd
-	ZRevRangeByLex(key string, opt redis.ZRangeByScore) *redis.StringSliceCmd
-	ZRevRangeByScore(key string, opt redis.ZRangeByScore) *redis.StringSliceCmd
-	ZRevRangeByScoreWithScores(key string, opt redis.ZRangeByScore) *redis.ZSliceCmd
+	ZRevRangeByLex(key string, opt redis.ZRangeBy) *redis.StringSliceCmd
+	ZRevRangeByScore(key string, opt redis.ZRangeBy) *redis.StringSliceCmd
+	ZRevRangeByScoreWithScores(key string, opt redis.ZRangeBy) *redis.ZSliceCmd
 	ZRevRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd
 	ZRevRank(key, member string) *redis.IntCmd
-	ZScan(key string, cursor int64, match string, count int64) *redis.ScanCmd
+	ZScan(key string, cursor int64, match string, count int64) *redis.Scanner
 	ZScore(key, member string) *redis.FloatCmd
 	ZUnionStore(dest string, store redis.ZStore, keys ...string) *redis.IntCmd
 }

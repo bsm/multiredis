@@ -3,7 +3,7 @@ package multiredis
 import (
 	"time"
 
-	"gopkg.in/redis.v3"
+	"gopkg.in/redis.v4"
 )
 
 type Options struct {
