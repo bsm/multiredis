@@ -13,7 +13,7 @@ type Options struct {
 	Addrs []string
 
 	// DB only applies to single-node clients
-	DB int64
+	DB int
 
 	// MasterName only accepted for sentinel backed clients
 	MasterName string

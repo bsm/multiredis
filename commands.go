@@ -9,6 +9,11 @@ import (
 // Commands exposes all supported commands
 type Commands interface {
 	Append(key, value string) *redis.IntCmd
+	BLPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd
+	BRPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd
+	BRPopLPush(source, destination string, timeout time.Duration) *redis.StringCmd
+	BgRewriteAOF() *redis.StatusCmd
+	BgSave() *redis.StatusCmd
 	BitCount(key string, bitCount *redis.BitCount) *redis.IntCmd
 	BitOpAnd(destKey string, keys ...string) *redis.IntCmd
 	BitOpNot(destKey string, key string) *redis.IntCmd
@@ -37,6 +42,7 @@ type Commands interface {
 	ClusterSaveConfig() *redis.StatusCmd
 	ClusterSlaves(nodeID string) *redis.StringSliceCmd
 	ClusterSlots() *redis.ClusterSlotsCmd
+	Command() *redis.CommandsInfoCmd
 	ConfigGet(parameter string) *redis.SliceCmd
 	ConfigResetStat() *redis.StatusCmd
 	ConfigSet(parameter, value string) *redis.StatusCmd
@@ -46,7 +52,7 @@ type Commands interface {
 	DecrBy(key string, decrement int64) *redis.IntCmd
 	Del(keys ...string) *redis.IntCmd
 	Dump(key string) *redis.StringCmd
-	Echo(message string) *redis.StringCmd
+	Echo(message interface{}) *redis.StringCmd
 	Eval(script string, keys []string, args ...interface{}) *redis.Cmd
 	EvalSha(sha1 string, keys []string, args ...interface{}) *redis.Cmd
 	Exists(key string) *redis.BoolCmd
@@ -66,15 +72,14 @@ type Commands interface {
 	HDel(key string, fields ...string) *redis.IntCmd
 	HExists(key, field string) *redis.BoolCmd
 	HGet(key, field string) *redis.StringCmd
-	HGetAll(key string) *redis.StringSliceCmd
-	HGetAllMap(key string) *redis.StringStringMapCmd
+	HGetAll(key string) *redis.StringStringMapCmd
 	HIncrBy(key, field string, incr int64) *redis.IntCmd
 	HIncrByFloat(key, field string, incr float64) *redis.FloatCmd
 	HKeys(key string) *redis.StringSliceCmd
 	HLen(key string) *redis.IntCmd
 	HMGet(key string, fields ...string) *redis.SliceCmd
-	HMSet(key, field, value string, pairs ...string) *redis.StatusCmd
-	HScan(key string, cursor int64, match string, count int64) *redis.Scanner
+	HMSet(key string, fields map[string]string) *redis.StatusCmd
+	HScan(key string, cursor uint64, match string, count int64) redis.Scanner
 	HSet(key, field, value string) *redis.BoolCmd
 	HSetNX(key, field, value string) *redis.BoolCmd
 	HVals(key string) *redis.StringSliceCmd
@@ -84,19 +89,21 @@ type Commands interface {
 	Info(section ...string) *redis.StringCmd
 	Keys(pattern string) *redis.StringSliceCmd
 	LIndex(key string, index int64) *redis.StringCmd
-	LInsert(key, op, pivot, value string) *redis.IntCmd
+	LInsert(key, op string, pivot, value interface{}) *redis.IntCmd
+	LInsertAfter(key string, pivot, value interface{}) *redis.IntCmd
+	LInsertBefore(key string, pivot, value interface{}) *redis.IntCmd
 	LLen(key string) *redis.IntCmd
 	LPop(key string) *redis.StringCmd
-	LPush(key string, values ...string) *redis.IntCmd
-	LPushX(key, value interface{}) *redis.IntCmd
+	LPush(key string, values ...interface{}) *redis.IntCmd
+	LPushX(key string, value interface{}) *redis.IntCmd
 	LRange(key string, start, stop int64) *redis.StringSliceCmd
 	LRem(key string, count int64, value interface{}) *redis.IntCmd
 	LSet(key string, index int64, value interface{}) *redis.StatusCmd
 	LTrim(key string, start, stop int64) *redis.StatusCmd
 	LastSave() *redis.IntCmd
 	MGet(keys ...string) *redis.SliceCmd
-	MSet(pairs ...string) *redis.StatusCmd
-	MSetNX(pairs ...string) *redis.BoolCmd
+	MSet(pairs ...interface{}) *redis.StatusCmd
+	MSetNX(pairs ...interface{}) *redis.BoolCmd
 	Migrate(host, port, key string, db int64, timeout time.Duration) *redis.StatusCmd
 	Move(key string, db int64) *redis.BoolCmd
 	ObjectEncoding(keys ...string) *redis.StringCmd
@@ -104,26 +111,27 @@ type Commands interface {
 	ObjectRefCount(keys ...string) *redis.IntCmd
 	PExpire(key string, expiration time.Duration) *redis.BoolCmd
 	PExpireAt(key string, tm time.Time) *redis.BoolCmd
-	PFAdd(key string, fields ...string) *redis.IntCmd
+	PFAdd(key string, els ...interface{}) *redis.IntCmd
 	PFCount(keys ...string) *redis.IntCmd
 	PFMerge(dest string, keys ...string) *redis.StatusCmd
 	PTTL(key string) *redis.DurationCmd
 	Persist(key string) *redis.BoolCmd
 	Ping() *redis.StatusCmd
-	Process(cmd redis.Cmder)
+	Process(cmd redis.Cmder) error
+	PubSubChannels(pattern string) *redis.StringSliceCmd
+	PubSubNumPat() *redis.IntCmd
+	PubSubNumSub(channels ...string) *redis.StringIntMapCmd
 	Quit() *redis.StatusCmd
 	RPop(key string) *redis.StringCmd
 	RPopLPush(source, destination string) *redis.StringCmd
-	RPush(key string, values ...string) *redis.IntCmd
+	RPush(key string, values ...interface{}) *redis.IntCmd
 	RPushX(key string, value interface{}) *redis.IntCmd
 	RandomKey() *redis.StringCmd
-	ReadWrite() *redis.StatusCmd
-	Readonly() *redis.StatusCmd
 	Rename(key, newkey string) *redis.StatusCmd
 	RenameNX(key, newkey string) *redis.BoolCmd
 	Restore(key string, ttl time.Duration, value string) *redis.StatusCmd
 	RestoreReplace(key string, ttl time.Duration, value string) *redis.StatusCmd
-	SAdd(key string, members ...string) *redis.IntCmd
+	SAdd(key string, members ...interface{}) *redis.IntCmd
 	SCard(key string) *redis.IntCmd
 	SDiff(keys ...string) *redis.StringSliceCmd
 	SDiffStore(destination string, keys ...string) *redis.IntCmd
@@ -133,23 +141,24 @@ type Commands interface {
 	SMembers(key string) *redis.StringSliceCmd
 	SMove(source, destination string, member interface{}) *redis.BoolCmd
 	SPop(key string) *redis.StringCmd
+	SPopN(key string, count int64) *redis.StringSliceCmd
 	SRandMember(key string) *redis.StringCmd
 	SRandMemberN(key string, count int64) *redis.StringSliceCmd
-	SRem(key string, members ...string) *redis.IntCmd
-	SScan(key string, cursor int64, match string, count int64) *redis.Scanner
+	SRem(key string, members ...interface{}) *redis.IntCmd
+	SScan(key string, cursor uint64, match string, count int64) redis.Scanner
 	SUnion(keys ...string) *redis.StringSliceCmd
 	SUnionStore(destination string, keys ...string) *redis.IntCmd
 	Save() *redis.StatusCmd
-	Scan(cursor int64, match string, count int64) *redis.Scanner
+	Scan(cursor uint64, match string, count int64) redis.Scanner
 	ScriptExists(scripts ...string) *redis.BoolSliceCmd
 	ScriptFlush() *redis.StatusCmd
 	ScriptKill() *redis.StatusCmd
 	ScriptLoad(script string) *redis.StringCmd
-	Select(index int64) *redis.StatusCmd
 	Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd
 	SetBit(key string, offset int64, value int) *redis.IntCmd
 	SetNX(key string, value interface{}, expiration time.Duration) *redis.BoolCmd
 	SetRange(key string, offset int64, value string) *redis.IntCmd
+	SetXX(key string, value interface{}, expiration time.Duration) *redis.BoolCmd
 	Shutdown() *redis.StatusCmd
 	ShutdownNoSave() *redis.StatusCmd
 	ShutdownSave() *redis.StatusCmd
@@ -175,12 +184,12 @@ type Commands interface {
 	ZIncrXX(key string, member redis.Z) *redis.FloatCmd
 	ZInterStore(destination string, store redis.ZStore, keys ...string) *redis.IntCmd
 	ZRange(key string, start, stop int64) *redis.StringSliceCmd
-	ZRangeByScore(key string, opt redis.ZRangeBy) *redis.StringSliceCmd
 	ZRangeByLex(key string, opt redis.ZRangeBy) *redis.StringSliceCmd
+	ZRangeByScore(key string, opt redis.ZRangeBy) *redis.StringSliceCmd
 	ZRangeByScoreWithScores(key string, opt redis.ZRangeBy) *redis.ZSliceCmd
 	ZRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd
 	ZRank(key, member string) *redis.IntCmd
-	ZRem(key string, members ...string) *redis.IntCmd
+	ZRem(key string, members ...interface{}) *redis.IntCmd
 	ZRemRangeByRank(key string, start, stop int64) *redis.IntCmd
 	ZRemRangeByScore(key, min, max string) *redis.IntCmd
 	ZRevRange(key string, start, stop int64) *redis.StringSliceCmd
@@ -189,7 +198,7 @@ type Commands interface {
 	ZRevRangeByScoreWithScores(key string, opt redis.ZRangeBy) *redis.ZSliceCmd
 	ZRevRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd
 	ZRevRank(key, member string) *redis.IntCmd
-	ZScan(key string, cursor int64, match string, count int64) *redis.Scanner
+	ZScan(key string, cursor uint64, match string, count int64) redis.Scanner
 	ZScore(key, member string) *redis.FloatCmd
 	ZUnionStore(dest string, store redis.ZStore, keys ...string) *redis.IntCmd
 }
