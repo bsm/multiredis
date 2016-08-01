@@ -8,15 +8,23 @@ type Client interface {
 	Commands
 	Close() error
 	Pipeline() Pipeline
+	Pipelined(fn func(Pipeline) error) ([]redis.Cmder, error)
 	PoolStats() *redis.PoolStats
+	Sync()
+	Watch(fn func(*redis.Tx) error, keys ...string) error
 }
 
 // Pipeline is a client-neutral pipeline
 type Pipeline interface {
 	Commands
+	Auth(password string) *redis.StatusCmd
 	Close() error
 	Discard() error
 	Exec() ([]redis.Cmder, error)
+	ReadOnly() *redis.StatusCmd
+	ReadWrite() *redis.StatusCmd
+	Select(index int) *redis.StatusCmd
+	Sync()
 }
 
 // New returns a new client, depending on the following conditions:
@@ -48,6 +56,18 @@ type simpleClient struct{ *redis.Client }
 
 func (c simpleClient) Pipeline() Pipeline { return c.Client.Pipeline() }
 
+func (c simpleClient) Pipelined(fn func(Pipeline) error) ([]redis.Cmder, error) {
+	return c.Client.Pipelined(func(p *redis.Pipeline) error {
+		return fn(p)
+	})
+}
+
 type clusterClient struct{ *redis.ClusterClient }
 
 func (c clusterClient) Pipeline() Pipeline { return c.ClusterClient.Pipeline() }
+
+func (c clusterClient) Pipelined(fn func(Pipeline) error) ([]redis.Cmder, error) {
+	return c.ClusterClient.Pipelined(func(p *redis.Pipeline) error {
+		return fn(p)
+	})
+}
