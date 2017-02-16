@@ -20,7 +20,7 @@ type Cmdable interface {
 	Move(key string, db int64) *redis.BoolCmd
 	ObjectRefCount(...string) *redis.IntCmd
 	ObjectEncoding(...string) *redis.StringCmd
-	ObjectIdleTime(...string) *redis.DurationCmd
+	ObjectIdleTime(string) *redis.DurationCmd
 	Persist(key string) *redis.BoolCmd
 	PExpire(key string, expiration time.Duration) *redis.BoolCmd
 	PExpireAt(key string, tm time.Time) *redis.BoolCmd
@@ -34,10 +34,10 @@ type Cmdable interface {
 	SortInterfaces(key string, sort redis.Sort) *redis.SliceCmd
 	TTL(key string) *redis.DurationCmd
 	Type(key string) *redis.StatusCmd
-	Scan(cursor uint64, match string, count int64) redis.Scanner
-	SScan(key string, cursor uint64, match string, count int64) redis.Scanner
-	HScan(string, uint64, string, int64) redis.Scanner
-	ZScan(key string, cursor uint64, match string, count int64) redis.Scanner
+	Scan(cursor uint64, match string, count int64) *redis.ScanCmd
+	SScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd
+	HScan(string, uint64, string, int64) *redis.ScanCmd
+	ZScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	Append(key, value string) *redis.IntCmd
 	BitCount(key string, bitCount *redis.BitCount) *redis.IntCmd
 	BitOpAnd(destKey string, keys ...string) *redis.IntCmd
@@ -73,8 +73,8 @@ type Cmdable interface {
 	HLen(key string) *redis.IntCmd
 	HMGet(key string, fields ...string) *redis.SliceCmd
 	HMSet(key string, fields map[string]string) *redis.StatusCmd
-	HSet(string, string, string) *redis.BoolCmd
-	HSetNX(string, string, string) *redis.BoolCmd
+	HSet(string, string, interface{}) *redis.BoolCmd
+	HSetNX(string, string, interface{}) *redis.BoolCmd
 	HVals(key string) *redis.StringSliceCmd
 	BLPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd
 	BRPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd
