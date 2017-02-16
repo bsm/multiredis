@@ -8,7 +8,6 @@ type Client interface {
 	Cmdable
 	Close() error
 	Pipeline() Pipeline
-	Pipelined(fn func(Pipeline) error) ([]redis.Cmder, error)
 	PoolStats() *redis.PoolStats
 	Sync()
 	Watch(fn func(*redis.Tx) error, keys ...string) error
@@ -55,18 +54,6 @@ type simpleClient struct{ *redis.Client }
 
 func (c simpleClient) Pipeline() Pipeline { return c.Client.Pipeline() }
 
-func (c simpleClient) Pipelined(fn func(Pipeline) error) ([]redis.Cmder, error) {
-	return c.Client.Pipelined(func(p *redis.Pipeline) error {
-		return fn(p)
-	})
-}
-
 type clusterClient struct{ *redis.ClusterClient }
 
 func (c clusterClient) Pipeline() Pipeline { return c.ClusterClient.Pipeline() }
-
-func (c clusterClient) Pipelined(fn func(Pipeline) error) ([]redis.Cmder, error) {
-	return c.ClusterClient.Pipelined(func(p *redis.Pipeline) error {
-		return fn(p)
-	})
-}
