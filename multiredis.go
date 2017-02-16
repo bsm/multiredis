@@ -1,11 +1,11 @@
 package multiredis
 
-import "gopkg.in/redis.v4"
+import "gopkg.in/redis.v5"
 
 // Client is an abstract client interface which can be either a
 // cluster or a sentinel-backed or a single-node client
 type Client interface {
-	Commands
+	Cmdable
 	Close() error
 	Pipeline() Pipeline
 	PoolStats() *redis.PoolStats
@@ -13,7 +13,7 @@ type Client interface {
 
 // Pipeline is a client-neutral pipeline
 type Pipeline interface {
-	Commands
+	Cmdable
 	Close() error
 	Discard() error
 	Exec() ([]redis.Cmder, error)

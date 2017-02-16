@@ -3,7 +3,7 @@ package multiredis
 import (
 	"time"
 
-	"gopkg.in/redis.v4"
+	"gopkg.in/redis.v5"
 )
 
 type Options struct {
@@ -13,7 +13,7 @@ type Options struct {
 	Addrs []string
 
 	// DB only applies to single-node clients
-	DB int64
+	DB int
 
 	// MasterName only accepted for sentinel backed clients
 	MasterName string
