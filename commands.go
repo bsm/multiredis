@@ -41,6 +41,11 @@ type Cmdable interface {
 	HScan(string, uint64, string, int64) *redis.ScanCmd
 	ZScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	Append(key, value string) *redis.IntCmd
+	BLPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd
+	BRPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd
+	BRPopLPush(source, destination string, timeout time.Duration) *redis.StringCmd
+	BgRewriteAOF() *redis.StatusCmd
+	BgSave() *redis.StatusCmd
 	BitCount(key string, bitCount *redis.BitCount) *redis.IntCmd
 	BitOpAnd(destKey string, keys ...string) *redis.IntCmd
 	BitOpOr(destKey string, keys ...string) *redis.IntCmd
@@ -130,6 +135,7 @@ type Cmdable interface {
 	ZRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd
 	ZRangeByScore(key string, opt redis.ZRangeBy) *redis.StringSliceCmd
 	ZRangeByLex(key string, opt redis.ZRangeBy) *redis.StringSliceCmd
+	ZRangeByScore(key string, opt redis.ZRangeBy) *redis.StringSliceCmd
 	ZRangeByScoreWithScores(key string, opt redis.ZRangeBy) *redis.ZSliceCmd
 	ZRank(key, member string) *redis.IntCmd
 	ZRem(key string, members ...interface{}) *redis.IntCmd
