@@ -7,6 +7,8 @@ import (
 )
 
 type Cmdable interface {
+	Process(redis.Cmder) error
+
 	Echo(message interface{}) *redis.StringCmd
 	Ping() *redis.StatusCmd
 	Quit() *redis.StatusCmd
