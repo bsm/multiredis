@@ -1,7 +1,10 @@
+PKG=$(shell glide nv)
+
 default: vet test
 
 vet:
-	go tool vet .
+	go vet $(PKG)
 
 test:
-	go test .
+	go test $(PKG)
+

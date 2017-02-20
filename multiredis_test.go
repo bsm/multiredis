@@ -6,6 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"gopkg.in/redis.v5"
 )
 
 var _ = Describe("Client", func() {
@@ -17,7 +18,7 @@ var _ = Describe("Client", func() {
 		})
 		defer client.Close()
 
-		Expect(client).To(BeAssignableToTypeOf(simpleClient{}))
+		Expect(client).To(BeAssignableToTypeOf(&redis.Client{}))
 	})
 
 	It("should init cluster clients", func() {
@@ -27,7 +28,7 @@ var _ = Describe("Client", func() {
 		})
 		defer client.Close()
 
-		Expect(client).To(BeAssignableToTypeOf(clusterClient{}))
+		Expect(client).To(BeAssignableToTypeOf(&redis.ClusterClient{}))
 	})
 
 })
